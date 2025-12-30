@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trivago Clone - Offline Map</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="logo">trivago</div>
+    <div class="search-bar">
+      <input type="text" id="mainSearchInput" placeholder="Where to?" />
+      <button onclick="filterHotels()">Search</button>
+    </div>
+  </header>
+
+  <!-- Modal for hotel details -->
+  <div id="hotelModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <img id="modalImage" src="" alt="Hotel" />
+      <h2 id="modalTitle"></h2>
+      <p id="modalCity"></p>
+      <p id="modalPrice"></p>
+      <p id="modalDescription"></p>
+      <button onclick="proceedToBooking()">Book Now</button>
+    </div>
+  </div>
+
+  <section class="hero">
+    <h1>Find your ideal hotel</h1>
+    <p>Compare prices from hundreds of websites</p>
+    <div class="search-form">
+      <input type="text" id="cityInput" placeholder="City or hotel name" />
+      <input type="date" />
+      <input type="date" />
+      <select>
+        <option>1 Guest</option>
+        <option>2 Guests</option>
+        <option>3 Guests</option>
+      </select>
+      <button onclick="filterHotels()">Search</button>
+    </div>
+  </section>
+
+  <section class="hotel-list" id="hotelList">
+    <!-- Hotels will be populated here dynamically -->
+  </section>
+
+  <!-- Download Ticket Section -->
+  <!--<section class="download-ticket" style="margin: 40px auto; max-width: 600px; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    <h2>Download Your Booking Ticket</h2>
+    <form id="ticketForm">
+      <label for="ticketEmail">Enter your Email:</label><br/>
+      <input type="email" id="ticketEmail" required placeholder="you@example.com" style="width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box;" />
+      <button type="submit" style="padding: 10px 20px; cursor: pointer;">Get Ticket</button>
+    </form>
+
+    <div id="ticketResult" style="margin-top:20px; font-family: Arial, sans-serif;"></div>
+  </section> -->
+
+  <footer class="footer">
+    <p>&copy; 2025 Trivago Clone. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+
+  <script>
+    // Ticket download logic
+    const ticketForm = document.getElementById('ticketForm');
+    const ticketResult = document.getElementById('ticketResult');
+
+    ticketForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      ticketResult.innerHTML = '';
+
+      const email = document.getElementById('ticketEmail').value.trim();
+      if (!email) {
+        alert('Please enter your email.');
+        return;
+      }
+
+      fetch('backend/get_ticket.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email})
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.status === 'success'){
+          const b = data.booking;
+
+          ticketResult.innerHTML = `
+            <h3>Booking Ticket</h3>
+            <p><strong>Name:</strong> ${b.name}</p>
+            <p><strong>Email:</strong> ${b.email}</p>
+            <p><strong>Hotel:</strong> ${b.hotel}</p>
+            <p><strong>City:</strong> ${b.city}</p>
+            <p><strong>Price:</strong> ${b.price}</p>
+            <p><strong>Check-in:</strong> ${b.checkIn}</p>
+            <p><strong>Check-out:</strong> ${b.checkOut}</p>
+            <button id="downloadBtn" style="padding: 10px 20px; cursor: pointer;">Download Ticket as PDF</button>
+          `;
+
+          document.getElementById('downloadBtn').addEventListener('click', () => {
+            const ticketContent = ticketResult.innerHTML;
+            const w = window.open();
+            w.document.write('<html><head><title>Booking Ticket</title><style>body{font-family: Arial, sans-serif; padding:20px;}</style></head><body>');
+            w.document.write(ticketContent);
+            w.document.write('</body></html>');
+            w.document.close();
+            w.print();
+          });
+
+        } else {
+          ticketResult.innerHTML = `<p style="color:red;">${data.message}</p>`;
+        }
+      })
+      .catch(err => {
+        ticketResult.innerHTML = `<p style="color:red;">Network error, please try again.</p>`;
+        console.error('Fetch error:', err);
+      });
+    });
+  
+  function openPaymentWindow() {
+    const booking = {
+      name: document.getElementById("modalTitle").innerText || "John Doe",
+      city: document.getElementById("modalCity").innerText || "Unknown City",
+      hotel: document.getElementById("modalTitle").innerText || "Hotel Name",
+      price: document.getElementById("modalPrice").innerText || "$0",
+      checkIn: "2025-07-01",  // You can make this dynamic
+      checkOut: "2025-07-05", // You can make this dynamic
+    };
+
+    const priceNumber = parseFloat(booking.price.replace(/[^\d.]/g, "")) || 0;
+    const tax = priceNumber * 0.1;
+    const total = priceNumber + tax;
+
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <html>
+        <head>
+          <title>Payment Summary</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 30px; }
+            h2 { margin-bottom: 10px; }
+            .details p { margin: 5px 0; }
+            .total { font-weight: bold; font-size: 1.2em; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <h2>Payment Summary</h2>
+          <div class="details">
+            <p><strong>Name:</strong> ${booking.name}</p>
+            <p><strong>Hotel:</strong> ${booking.hotel}</p>
+            <p><strong>City:</strong> ${booking.city}</p>
+            <p><strong>Check-in:</strong> ${booking.checkIn}</p>
+            <p><strong>Check-out:</strong> ${booking.checkOut}</p>
+            <p><strong>Base Price:</strong> $${priceNumber.toFixed(2)}</p>
+            <p><strong>Tax (10%):</strong> $${tax.toFixed(2)}</p>
+            <p class="total"><strong>Total:</strong> $${total.toFixed(2)}</p>
+          </div>
+        </body>
+      </html>
+    `);
+    win.document.close();
+  }
+  
+  </script>
+</body>
+</html>

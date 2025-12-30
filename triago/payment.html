@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Booking & Payment</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f9f9f9, #f1f5f9);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #0056b3;
+      margin-bottom: 25px;
+    }
+    .hotel-info, .payment-section, .confirmation-section {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    .hotel-info img {
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .confirmation-section img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: cover;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .confirmation-section .ticket {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+    }
+    .confirmation-section h3 {
+      font-size: 22px;
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+    .confirmation-section p {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .confirmation-section .total {
+      font-size: 18px;
+      color: #28a745;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Confirm Your Booking</h2>
+
+    <!-- Hotel Info -->
+    <div class="hotel-info active" id="hotelInfo">
+      <h3 id="hotelName"></h3>
+      <p id="hotelCity"></p>
+      <p id="hotelPrice"></p>
+      <img id="hotelImage" alt="Hotel Image" />
+      <p id="hotelDates"></p>
+      <p id="totalAmount" class="total"></p>
+      <button onclick="goToPayment()">Book Now</button>
+    </div>
+
+    <!-- Payment Section -->
+    <div class="payment-section" id="paymentSection">
+      <form id="paymentForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" required />
+
+        <label for="paymentMode">Payment Method:</label>
+        <select id="paymentMode" required>
+          <option value="">--Select--</option>
+          <option value="upi">UPI</option>
+          <option value="card">Credit/Debit Card</option>
+        </select>
+
+        <button type="submit">Confirm Payment</button>
+      </form>
+    </div>
+
+    <!-- Confirmation Ticket -->
+    <div class="confirmation-section" id="confirmationSection">
+      <div class="ticket">
+        <h3>🎉 Booking Confirmed!</h3>
+        <p><strong>Name:</strong> <span id="cName"></span></p>
+        <p><strong>City:</strong> <span id="cCity"></span></p>
+        <p><strong>Email:</strong> <span id="cEmail"></span></p>
+        <p><strong>Check-in:</strong> <span id="cIn"></span></p>
+        <p><strong>Check-out:</strong> <span id="cOut"></span></p>
+        <p><strong>Price per night:</strong> ₹<span id="cPrice"></span></p>
+        <p><strong>Nights:</strong> <span id="cNights"></span></p>
+        <p class="total">Total Paid: ₹<span id="cTotal"></span></p>
+        <img id="cImage" alt="Hotel Image" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const hotelName = params.get("name");
+    const hotelPrice = params.get("price");
+    const hotelImage = params.get("image");
+    const hotelCity = params.get("city");
+    const checkIn = params.get("checkIn");
+    const checkOut = params.get("checkOut");
+
+    const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+    const priceNum = parseFloat(hotelPrice.replace(/[^\d.]/g, "")) || 0;
+    const total = priceNum * nights;
+
+    document.getElementById("hotelName").innerText = hotelName;
+    document.getElementById("hotelCity").innerText = `City: ${hotelCity}`;
+    document.getElementById("hotelPrice").innerText = `Price per night: ₹${priceNum.toLocaleString()}`;
+    document.getElementById("hotelImage").src = hotelImage;
+    document.getElementById("hotelDates").innerText = `Check-in: ${checkIn}, Check-out: ${checkOut}`;
+    document.getElementById("totalAmount").innerText = `Total for ${nights} night(s): ₹${total.toLocaleString()}`;
+
+    function goToPayment() {
+      document.getElementById("hotelInfo").classList.remove("active");
+      document.getElementById("paymentSection").classList.add("active");
+    }
+
+    document.getElementById("paymentForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const paymentMode = document.getElementById("paymentMode").value;
+
+      if (!email || !paymentMode) {
+        alert("Please complete all fields.");
+        return;
+      }
+
+      // Show confirmation ticket
+      document.getElementById("paymentSection").classList.remove("active");
+      document.getElementById("confirmationSection").classList.add("active");
+
+      document.getElementById("cName").innerText = hotelName;
+      document.getElementById("cCity").innerText = hotelCity;
+      document.getElementById("cEmail").innerText = email;
+      document.getElementById("cIn").innerText = checkIn;
+      document.getElementById("cOut").innerText = checkOut;
+      document.getElementById("cPrice").innerText = priceNum.toLocaleString();
+      document.getElementById("cNights").innerText = nights;
+      document.getElementById("cTotal").innerText = total.toLocaleString();
+      document.getElementById("cImage").src = hotelImage;
+
+      // 🔽 Save booking to MySQL via backend
+      fetch("backend/save_booking.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: hotelName,
+          email: email,
+          hotel: hotelName,
+          city: hotelCity,
+          price: hotelPrice,
+          checkIn: checkIn,
+          checkOut: checkOut
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== "success") {
+          alert("⚠️ Booking not saved to database.");
+        }
+      })
+      .catch(err => {
+        alert("❌ Error connecting to server.");
+        console.error(err);
+      });
+    });
+  </script>
+</body>
+</html>

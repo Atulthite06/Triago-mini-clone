@@ -1,0 +1,16 @@
+-- Create database
+CREATE DATABASE IF NOT EXISTS trivago_clone;
+USE trivago_clone;
+
+-- Create bookings table
+CREATE TABLE IF NOT EXISTS bookings (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    hotel VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    price VARCHAR(50) NOT NULL,
+    checkIn DATE NOT NULL,
+    checkOut DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

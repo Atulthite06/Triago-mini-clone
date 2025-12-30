@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hotel Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    .container {
+      background: white;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    p {
+      margin: 10px 0;
+    }
+    input[type="date"] {
+      width: 48%;
+      padding: 10px;
+      margin: 10px 1%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    #availabilityMessage {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .available {
+      color: green;
+    }
+    .limited {
+      color: orange;
+    }
+    .unavailable {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img id="hotelImage" src="" alt="Hotel Image">
+    <h1 id="hotelName"></h1>
+    <p id="hotelCity"></p>
+    <p id="hotelPrice"></p>
+    <p id="hotelDescription"></p>
+
+    <h3>Select Dates</h3>
+    <input type="date" id="checkIn">
+    <input type="date" id="checkOut">
+
+    <button class="btn" onclick="checkAvailability()">Check Availability</button>
+
+    <div id="availabilityMessage"></div>
+
+    <button id="bookBtn" class="btn" style="display:none;" onclick="goToPayment()">Book Now</button>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+    const city = params.get("city");
+    const price = params.get("price");
+    const image = params.get("image");
+    const description = params.get("description");
+
+    document.getElementById("hotelName").innerText = name;
+    document.getElementById("hotelCity").innerText = "City: " + city;
+    document.getElementById("hotelPrice").innerText = "Price: " + price;
+    document.getElementById("hotelDescription").innerText = description;
+    document.getElementById("hotelImage").src = image;
+
+    function checkAvailability() {
+      const checkIn = document.getElementById("checkIn").value;
+      const checkOut = document.getElementById("checkOut").value;
+      const messageEl = document.getElementById("availabilityMessage");
+      const bookBtn = document.getElementById("bookBtn");
+
+      if (!checkIn || !checkOut) {
+        alert("Please select both check-in and check-out dates.");
+        return;
+      }
+
+      // Simulate random availability
+      const rand = Math.random();
+      if (rand < 0.4) {
+        messageEl.innerText = "✅ Rooms available!";
+        messageEl.className = "available";
+        bookBtn.style.display = "inline-block";
+      } else if (rand < 0.7) {
+        messageEl.innerText = "⚠️ Limited rooms left!";
+        messageEl.className = "limited";
+        bookBtn.style.display = "inline-block";
+      } else {
+        messageEl.innerText = "❌ Sorry, rooms are sold out!";
+        messageEl.className = "unavailable";
+        bookBtn.style.display = "none";
+      }
+    }
+
+    function goToPayment() {
+      const checkIn = document.getElementById("checkIn").value;
+      const checkOut = document.getElementById("checkOut").value;
+
+      const paymentParams = new URLSearchParams({
+        name,
+        city,
+        price,
+        image,
+        checkIn,
+        checkOut
+      });
+
+      window.location.href = `payment.html?${paymentParams.toString()}`;
+    }
+  </script>
+</body>
+</html>
